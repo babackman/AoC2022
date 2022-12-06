@@ -14,7 +14,7 @@ public class Day06 {
         }
     }
 
-    private static int findMarker(String input, int keyLength)
+    public static int findMarker(String input, int keyLength)
     {
         String keyBuffer ="";
         int syncPosition,length;
