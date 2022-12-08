@@ -8,6 +8,7 @@ public class Day07 {
         ProcessInput(input,fileSystem);
         
         p1(fileSystem);
+        p2(fileSystem);
     }
 
     public static void p1(FileSystem filesystem)
@@ -17,6 +18,19 @@ public class Day07 {
         for(var folder: foundFolders)
             totalSize += folder.getTotalSize(true);
         System.out.println("07.1: " + totalSize);
+    }
+    public static void p2(FileSystem filesystem)
+    {
+        int requiredForUpdate = 30000000;
+        int totalAvailable = 70000000;
+        int currentFreeSpace = totalAvailable - filesystem.getRoot().getTotalSize(true);
+        int neededToFree = requiredForUpdate - currentFreeSpace ;
+        var deleteMe = SmallestSubFolderInSizeRange(filesystem.getRoot(),
+            neededToFree, Integer.MAX_VALUE);
+        if (deleteMe ==null)
+            System.out.println("07.2: no folder is big enough");
+        else
+            System.out.println("07.2: " + deleteMe.getTotalSize(true));
     }
     public static void ProcessInput(List<String>input, FileSystem fileSystem)
     {
@@ -57,6 +71,40 @@ public class Day07 {
         return foundFolders;
     }
     
+    public static Folder SmallestSubFolderInSizeRange(Folder start, int minSize, int maxSize)
+    {
+        int smallestSize=Integer.MAX_VALUE;
+        Folder smallestFolder=null;
+        for(var sub: start.getSubFolders())
+        {
+            var smallestInSub = SmallestSubFolderInSizeRange(sub, minSize, maxSize);
+            boolean updatedSmallest=false;
+            if (smallestInSub != null)
+            {
+                int size = smallestInSub.getTotalSize(true);
+                if (size < smallestSize)
+                {
+                    smallestSize=size;
+                    smallestFolder=smallestInSub;
+                    maxSize = smallestSize;
+                    updatedSmallest=true;
+                }
+            }
+            // check sub if one of its subs didn't already win 
+            // (sub can't be smaller than one of its subs so don't check if one of them already won)
+            if (!updatedSmallest)
+            {
+                int size = sub.getTotalSize(true);
+                if ((size >= minSize) && (size <= maxSize) && (size < smallestSize))
+                {
+                    smallestSize=size;
+                    maxSize=smallestSize;
+                    smallestFolder=sub;
+                }
+            }
+        }
+        return smallestFolder;
+    }
 static class FileSystem{
     Folder _root;
     Folder _current;
