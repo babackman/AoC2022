@@ -5,8 +5,8 @@ public class Day08 {
     public static void Run(List<String> input) {
         var treeGrid = ProcessInput(input);
 
-        System.out.println("Day 07.1 visible trees: " + p1(treeGrid));
-        System.out.println("Day 07.2 best scenic score: " + p2(treeGrid));
+        System.out.println("Day 08.1 visible trees: " + p1(treeGrid));
+        System.out.println("Day 08.2 best scenic score: " + p2(treeGrid));
     }
 
     private static char[][] ProcessInput(List<String> input) {
