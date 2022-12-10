@@ -7,11 +7,11 @@ import java.util.*;
 
 class Main {
 
-    public static void main(String[] args) throws java.io.IOException {
+  public static void main(String[] args) throws java.io.IOException {
 
-    List<String> lines = Files.readAllLines(Paths.get("09_data.txt"));
+    List<String> lines = Files.readAllLines(Paths.get("10_data.txt"));
 
-    Day09.Run(lines);
+    Day10.Run(lines);
   }
 
 }
