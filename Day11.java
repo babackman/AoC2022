@@ -1,3 +1,4 @@
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +26,7 @@ public class Day11 {
                     .substring("  Starting items: ".length())
                     .split(", ");
             for (var item : items)
-                monkeys[i].addItem(new BigInt(Long.parseLong(item)));
+                monkeys[i].addItem(BigInteger.valueOf(Long.parseLong(item)));
 
             // +2 " Operation: new = old * 19"
             var operation = input.get(startLine + 2)
@@ -66,25 +67,26 @@ public class Day11 {
 
         // multiply top 2 inspection counts:
         Arrays.sort(inspectionCount);
-        BigInt monkeyBusiness = new BigInt(inspectionCount[inspectionCount.length - 1]);
-        monkeyBusiness.mul(inspectionCount[inspectionCount.length - 2]);
+        BigInteger monkeyBusiness = BigInteger.valueOf(inspectionCount[inspectionCount.length - 1])
+            .multiply( BigInteger.valueOf(inspectionCount[inspectionCount.length - 2]));
         System.out.println("Day 11 p1: " + monkeyBusiness.toString());
     }
 
     private static void p2(List<String> input) {
-        String fiveBackspaces="\b\b\b\b\b";
+        String backspaces="\b\b\b\b\b\b\b\b\b\b\b";
         var monkeys = processInput(input);
         for (var monkey : monkeys)
             monkey.setApplyReliefFactor(false);
 
         // run 10000 rounds
         for (int round = 1; round <= 10000; round++) {
-            System.out.print(fiveBackspaces+round);
-            for (var monkey : monkeys)
-                monkey.inspectAndThrowAll();
+            for (int m=0;m < monkeys.length;m++){
+                System.out.print(backspaces + round +"."+m);
+                monkeys[m].inspectAndThrowAll();
+            }
             if ((round == 1) || (round==20) || ((round %1000)==0))
             {
-                System.out.println(fiveBackspaces+"== After round "+ round + " ==");
+                System.out.println(backspaces+"== After round "+ round + " ==");
                 for (int j=0;j < monkeys.length; j++)
                     System.out.println("Monkey "+j+" inspected items "+monkeys[j].getInspectionCount()+" times.");
             }
@@ -102,27 +104,27 @@ public class Day11 {
 
     private static class Monkey {
         // worry levels of items held by monkey
-        private ArrayList<BigInt> _items = new ArrayList<BigInt>();
+        private ArrayList<BigInteger> _items = new ArrayList<BigInteger>();
         // operator of the monkey's worry operation
         private char _operator;
         // true if the opearand of the worry operation is _constOperand, if false, use
         // old value
         private boolean _useConstOperand = false;
         // constant operand to use if _useConstOperand is true
-        private int  _constOperand;
+        private BigInteger  _constOperand;
         // value use din divisible-by test for where to toss item
-        private int _testDivisor;
+        private BigInteger _testDivisor;
         // monkey to toss to if test evalueates to true
         private Monkey _trueTarget;
         // monkey to toss to if test evalueates to false
         private Monkey _falseTarget;
-        private static int _reliefFactor = 3;
+        private static final BigInteger _reliefFactor = BigInteger.valueOf(3);
         // true if new item values should be divided by _reliefFactor
         private boolean _applyReliefFactor = true;
         // number of items inspected by this monkey
         private int _inspectionCount = 0;
 
-        public void addItem(BigInt item) {
+        public void addItem(BigInteger item) {
             _items.add(item);
         }
 
@@ -131,12 +133,12 @@ public class Day11 {
         }
 
         public void setConstOperand(int operand) {
-            _constOperand = operand;
+            _constOperand = BigInteger.valueOf(operand);
             _useConstOperand = true;
         }
 
         public void setTestDivisor(int  divisor) {
-            _testDivisor = divisor;
+            _testDivisor = BigInteger.valueOf(divisor);
         }
 
         public void setTrueTarget(Monkey target) {
@@ -158,38 +160,37 @@ public class Day11 {
         public void inspectAndThrowAll() {
             for (var item : _items) {
                 _inspectionCount++;
-                updateItem(item);
-                var remainder = item.copy();
-                remainder.urem(_testDivisor);
-                var throwTo = (remainder.isZero())
+                BigInteger newValue = calculateNewValue(item);
+                var quotientAndRemainder=newValue.divideAndRemainder(_testDivisor);
+                var throwTo = quotientAndRemainder[1].equals(BigInteger.ZERO)
                         ? _trueTarget
                         : _falseTarget;
-                throwTo.addItem(item);
+                throwTo.addItem(newValue);
             }
 
             // all items have been thrown:
             _items.clear();
         }
 
-        private void  updateItem(BigInt item){
+        private BigInteger calculateNewValue(BigInteger item){
+            BigInteger newValue;
             if (_operator == '*'){
                 if(_useConstOperand)
-                    item.umul(_constOperand);
+                    newValue=item.multiply(_constOperand);
                 else
-                    item.karatsuba(item.copy()); // bigInt's weird name for multiplying by another BigInt
+                    newValue=item.pow(2);
 
             }
             else{
                 if (_useConstOperand)
-                    item.uadd(_constOperand);
+                    newValue = item.add(_constOperand);
                 else
-                    item.add(item.copy());
+                    newValue = item.shiftLeft(2); //double it
             }
-
-                
         
             if (_applyReliefFactor)
-                item.udiv(_reliefFactor);
+                newValue = newValue.divide(_reliefFactor);
+            return newValue;
         }
     }
 }
