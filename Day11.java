@@ -26,7 +26,7 @@ public class Day11 {
                     .substring("  Starting items: ".length())
                     .split(", ");
             for (var item : items)
-                monkeys[i].addItem(BigInteger.valueOf(Long.parseLong(item)));
+                monkeys[i].addItem(Long.parseLong(item));
 
             // +2 " Operation: new = old * 19"
             var operation = input.get(startLine + 2)
@@ -48,7 +48,13 @@ public class Day11 {
             targetIndex = Integer.parseInt(input.get(startLine + 5)
                     .substring("    If false: throw to monkey ".length()));
             monkeys[i].setFalseTarget(monkeys[targetIndex]);
-        }
+            }
+
+            long lcm=1;
+            for(var monkey: monkeys)
+                lcm *= monkey.getTestDivisor();
+            for (var monkey: monkeys)
+                monkey.setLcm(lcm);
         return monkeys;
     }
 
@@ -67,9 +73,9 @@ public class Day11 {
 
         // multiply top 2 inspection counts:
         Arrays.sort(inspectionCount);
-        BigInteger monkeyBusiness = BigInteger.valueOf(inspectionCount[inspectionCount.length - 1])
-            .multiply( BigInteger.valueOf(inspectionCount[inspectionCount.length - 2]));
-        System.out.println("Day 11 p1: " + monkeyBusiness.toString());
+        long  monkeyBusiness = (inspectionCount[inspectionCount.length - 1])
+            * inspectionCount[inspectionCount.length - 2];
+        System.out.println("Day 11 p1: " + monkeyBusiness);
     }
 
     private static void p2(List<String> input) {
@@ -93,7 +99,7 @@ public class Day11 {
         }
 
         // get all inspection counts:
-        var inspectionCount = new int[monkeys.length];
+        var inspectionCount = new long[monkeys.length];
         for (int i = 0; i < monkeys.length; i++)
             inspectionCount[i] = monkeys[i].getInspectionCount();
 
@@ -104,27 +110,29 @@ public class Day11 {
 
     private static class Monkey {
         // worry levels of items held by monkey
-        private ArrayList<BigInteger> _items = new ArrayList<BigInteger>();
+        private ArrayList<Long> _items = new ArrayList<Long>();
         // operator of the monkey's worry operation
         private char _operator;
         // true if the opearand of the worry operation is _constOperand, if false, use
         // old value
         private boolean _useConstOperand = false;
         // constant operand to use if _useConstOperand is true
-        private BigInteger  _constOperand;
+        private long  _constOperand;
         // value use din divisible-by test for where to toss item
-        private BigInteger _testDivisor;
+        private long _testDivisor;
         // monkey to toss to if test evalueates to true
         private Monkey _trueTarget;
         // monkey to toss to if test evalueates to false
         private Monkey _falseTarget;
-        private static final BigInteger _reliefFactor = BigInteger.valueOf(3);
+        private static final long _reliefFactor = 3;
         // true if new item values should be divided by _reliefFactor
         private boolean _applyReliefFactor = true;
+        // least common multiple of all monkeys' test divisors
+        private long _lcm=1;
         // number of items inspected by this monkey
-        private int _inspectionCount = 0;
+        private long  _inspectionCount = 0;
 
-        public void addItem(BigInteger item) {
+        public void addItem(long item) {
             _items.add(item);
         }
 
@@ -133,14 +141,16 @@ public class Day11 {
         }
 
         public void setConstOperand(int operand) {
-            _constOperand = BigInteger.valueOf(operand);
+            _constOperand =operand;
             _useConstOperand = true;
         }
 
         public void setTestDivisor(int  divisor) {
-            _testDivisor = BigInteger.valueOf(divisor);
+            _testDivisor = divisor;
         }
-
+        public long getTestDivisor(){
+            return _testDivisor;
+        }
         public void setTrueTarget(Monkey target) {
             _trueTarget = target;
         }
@@ -152,8 +162,11 @@ public class Day11 {
         public void setApplyReliefFactor(boolean apply) {
             _applyReliefFactor = apply;
         }
+        public void setLcm(long lcm){
+            _lcm=lcm;
+        }
 
-        public int getInspectionCount() {
+        public long getInspectionCount() {
             return _inspectionCount;
         }
 
@@ -173,38 +186,42 @@ public class Day11 {
             _items.clear();
         }
 
-        private BigInteger calculateNewValue(BigInteger item){
-            BigInteger newValue;
+        private long calculateNewValue(long item){
+            long  newValue;
+            
             if (_operator == '*'){
                 if(_useConstOperand)
-                    newValue=item.multiply(_constOperand);
+                    newValue=item*_constOperand;
                 else
-                    newValue=item.pow(2);
-
+                    newValue=item * item;
             }
             else{
                 if (_useConstOperand)
-                    newValue = item.add(_constOperand);
+                    newValue = item + _constOperand;
                 else
-                    newValue = item.shiftLeft(2); //double it
+                    newValue = item + item; 
             }
-        
+            if (newValue < item)
+                System.out.println("possible overflow");
+
             if (_applyReliefFactor)
-                newValue = newValue.divide(_reliefFactor);
+                newValue /=  _reliefFactor;
+
+            newValue %= _lcm;
+
             return newValue;
         }
-        private Destination mapDestinationPair(BigInteger item)
+        private Destination mapDestinationPair(long item)
         {
-            var quotientAndRemainder=item.divideAndRemainder(_testDivisor);
-            var throwTo = quotientAndRemainder[1].equals(BigInteger.ZERO)
+            var throwTo = ((item % _testDivisor)==0)
                     ? _trueTarget
                     : _falseTarget;
             return new Destination(item,throwTo);
         }
         private class Destination{
-            public BigInteger item;
+            public long item;
             public Monkey target;
-            public Destination(BigInteger i, Monkey t){
+            public Destination(long i, Monkey t){
                 item = i;
                 target = t;
             }
