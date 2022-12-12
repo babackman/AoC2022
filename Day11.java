@@ -158,17 +158,18 @@ public class Day11 {
         }
 
         public void inspectAndThrowAll() {
-            for (var item : _items) {
-                _inspectionCount++;
-                BigInteger newValue = calculateNewValue(item);
-                var quotientAndRemainder=newValue.divideAndRemainder(_testDivisor);
-                var throwTo = quotientAndRemainder[1].equals(BigInteger.ZERO)
-                        ? _trueTarget
-                        : _falseTarget;
-                throwTo.addItem(newValue);
-            }
-
+            // calculate all tosses in parallel
+            var tosses = _items.parallelStream()
+                .map(i -> calculateNewValue(i))
+                .map(i -> mapDestinationPair(i))
+                .toList();
+            
+                // perform tosses sequentially because ArrayList may not handle parallel access:
+            for(var toss : tosses)
+                toss.target.addItem(toss.item);
+            
             // all items have been thrown:
+            _inspectionCount += _items.size();
             _items.clear();
         }
 
@@ -191,6 +192,23 @@ public class Day11 {
             if (_applyReliefFactor)
                 newValue = newValue.divide(_reliefFactor);
             return newValue;
+        }
+        private Destination mapDestinationPair(BigInteger item)
+        {
+            var quotientAndRemainder=item.divideAndRemainder(_testDivisor);
+            var throwTo = quotientAndRemainder[1].equals(BigInteger.ZERO)
+                    ? _trueTarget
+                    : _falseTarget;
+            return new Destination(item,throwTo);
+        }
+        private class Destination{
+            public BigInteger item;
+            public Monkey target;
+            public Destination(BigInteger i, Monkey t){
+                item = i;
+                target = t;
+            }
+            
         }
     }
 }
