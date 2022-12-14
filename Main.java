@@ -9,9 +9,9 @@ class Main {
 
   public static void main(String[] args) throws java.io.IOException {
 
-    List<String> lines = Files.readAllLines(Paths.get("11_data.txt"));
+    List<String> lines = Files.readAllLines(Paths.get("13_data.txt"));
 
-    Day11.Run(lines);
+    Day13.Run(lines);
   }
 
 }
