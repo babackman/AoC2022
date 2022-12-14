@@ -2,13 +2,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Day14 {
-   public static void Run(List<String> input)
-   {
-    var slice = ProcessInput(input);
-    p1(slice);
+   public static void Run(List<String> input)  {
+    p1(input);
+    p2(input);
    }
     
-   private static CaveSlice ProcessInput(List<String> input)
+   private static CaveSlice ProcessInput(List<String> input, boolean withFloor)
    {
         var  rockPaths= new ArrayList<ArrayList<Point>>(input.size());
         int minX=500;
@@ -28,18 +27,28 @@ public class Day14 {
             }
             rockPaths.add(path);
         }
-
+        if (withFloor)
+        {
+            // floor will be at max + 2:
+            maxY += 2;
+            // make cave much wider than tall so we hit ceiling before sides:
+            minX-=(maxY*2);
+            maxX+=(maxY*2);
+        }
         var slice = new CaveSlice(minX, maxX, maxY);
         for(var path: rockPaths){
             for (int i=0; i<path.size()-1; i++){
                 var point1=path.get(i);
                 var point2=path.get(i+1);
-                slice.AddRockLine(point1.X, point1.Y, point2.X, point2.Y);
+                slice.addRockLine(point1.X, point1.Y, point2.X, point2.Y);
             }
         }
+        if (withFloor)
+            slice.addRockLine(minX, maxY, maxX, maxY);
         return slice;
    }
-   private static void p1(CaveSlice slice){
+   private static void p1(List<String> input){
+        var slice = ProcessInput(input, false);
         int sandUnits=0;
         DropResult result;
         do{
@@ -50,6 +59,23 @@ public class Day14 {
         
         System.out.println("Day 14, p1: "+ sandUnits);
    }
+
+   private static void p2(List<String> input){
+    var slice = ProcessInput(input, true);
+    int sandUnits=0;
+    DropResult result;
+    do{
+        result = slice.addSand(500);
+        if (result == DropResult.Rest)
+            sandUnits++;
+        else if (result==DropResult.Void){
+            System.out.println("Day 14 p2: make the cave wider!");
+        }            
+      
+    } while (result == DropResult.Rest);
+    
+    System.out.println("Day 14, p2: "+ sandUnits);
+}
 
    private static enum CellContent {
         Air, 
@@ -78,7 +104,7 @@ public class Day14 {
                 for (int col=0; col < width; col++ )
                     _contents[row][col]=CellContent.Air;
         }
-        public void AddRockLine(int x1, int y1, int x2, int y2)
+        public void addRockLine(int x1, int y1, int x2, int y2)
         {
             if (x1 == x2)
             {
