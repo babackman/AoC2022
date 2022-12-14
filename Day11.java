@@ -189,25 +189,28 @@ public class Day11 {
         private long calculateNewValue(long item){
             long  newValue;
             
+            newValue = item %= _lcm;
+            if (newValue==0)
+                newValue = _lcm;
+                
             if (_operator == '*'){
                 if(_useConstOperand)
-                    newValue=item*_constOperand;
+                    newValue *= _constOperand;
                 else
-                    newValue=item * item;
+                    newValue *= item;
             }
             else{
                 if (_useConstOperand)
-                    newValue = item + _constOperand;
+                    newValue +=  _constOperand;
                 else
-                    newValue = item + item; 
+                    newValue +=  item; 
             }
-            if (newValue < item)
-                System.out.println("possible overflow");
+//            if (newValue < item)
+//                System.out.println("possible overflow");
 
             if (_applyReliefFactor)
                 newValue /=  _reliefFactor;
 
-            newValue %= _lcm;
 
             return newValue;
         }

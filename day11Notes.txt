@@ -1,0 +1,11 @@
+Real data inspection counts with working code and 20 rounds
+0 163
+1 258
+2 51
+3 247
+4 271
+5 22
+6 105
+7 229
+
+
