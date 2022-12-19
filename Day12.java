@@ -5,16 +5,35 @@ public class Day12 {
 
     public static void Run(List<String> input) {
         var map = new Map(input);
-        var shortestPath = FindShortestPath(map);
+
+        var shortestPath = FindShortestPath(map, map.getStart());
         
         System.out.println("Day 12 p1, shortest path is "+(shortestPath.size()-1)+" steps");
+        p2(map);
     }
 
-    public static  List<MapPoint> FindShortestPath(Map map)
+    public static void p2(Map map)
+    {
+        int shortestLength = Integer.MAX_VALUE;
+        for (int y=0; y < map.getHeight(); y++){
+            for (int x = 0; x < map.getWidth(); x++){
+                var point = map.getPoint(x,y);
+                if (point.getElevation()=='a')
+                {
+                    resetNavigation(map);
+                    var path = FindShortestPath(map, point);
+                    if ((path != null) && (path.size() < shortestLength))
+                        shortestLength = path.size();
+                }
+            }
+        }
+        System.out.println("Day 12 p1, shortest path from any 'a' is "+(shortestLength-1)+" steps");
+    }
+
+    public static  List<MapPoint> FindShortestPath(Map map, MapPoint start)
     {
         // based on https://en.wikipedia.org/w/index.php?title=Dijkstra%27s_algorithm&oldid=1127202995#Using_a_priority_queue
         
-        var start = map.getStart();
         var destination = map.getDestination();
         start.setBestPredecssor(null, 0);
 
@@ -79,6 +98,13 @@ public class Day12 {
 
         return nextSteps;
     }
+    public static void resetNavigation(Map map)
+    {
+        for (int y=0; y < map.getHeight(); y++){
+            for (int x=0; x < map.getWidth(); x++)
+                map.getPoint(x, y).setBestPredecssor(null, Integer.MAX_VALUE);
+        }
+    }
 
     public static boolean IsLegalNextStep(MapPoint current, MapPoint next)
     {
@@ -118,6 +144,8 @@ public class Day12 {
 
         public MapPoint getStart(){return _start;}
         public MapPoint getDestination(){return _destination;}
+        public int getWidth(){return _width;}
+        public int getHeight(){return _height;}
 
         public MapPoint getPoint(int x, int y)
         {
