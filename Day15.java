@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.lang.String;
@@ -8,7 +9,7 @@ public class Day15 {
     {
         var sensors = readSensors(input);
         p1(sensors, p1yCoordToCheck);
-        //p2(sensors, p2MaxCoord);
+        p2(sensors, p2MaxCoord);
     }
 
     private static List<Sensor> readSensors(List<String>input){
@@ -39,11 +40,7 @@ public class Day15 {
     }
 
     public static void p1(List<Sensor> sensors, long yCoordToCheck){
-        HashSet<Long> allXCoordinates=new HashSet<Long>();
-        for (Sensor s : sensors){
-            var xcoords = xCoordinatesWithNoBeacon(s, yCoordToCheck);
-            allXCoordinates.addAll(xcoords);
-        }
+        Collection<Long> allXCoordinates = xCoordinatesInSensorRange(sensors, yCoordToCheck);
         // weed out positions that actually have beacons on them:
         for (Sensor s : sensors){
             if (s.getBeaconY()==yCoordToCheck){
@@ -54,12 +51,29 @@ public class Day15 {
     }
 
     public static void p2(List<Sensor> sensors, long maxCoordinate){
-        for(long y=0; y<= maxCoordinate; y++){
-
+        for(long y = 0; y <= maxCoordinate; y++){
+            var noBeacons = xCoordinatesInSensorRange(sensors,y);
+            for (long x = 0; x <= maxCoordinate; x++){
+                if (noBeacons.contains(x))
+                    continue;
+                
+                long tuningFrequency = Math.addExact(Math.multiplyExact(x,4000000), y);
+                System.out.println("Day 15, pt 2.  Tunung frequency: "+tuningFrequency);
+                return;
+            }
         }
     }
 
-    public static List<Long> xCoordinatesWithNoBeacon(Sensor s, long ycoordinate)
+    public static Collection<Long> xCoordinatesInSensorRange(List<Sensor> sensors, long yCoordToCheck){
+        HashSet<Long> allXCoordinates=new HashSet<Long>();
+        for (Sensor s : sensors){
+            var xcoords = xCoordinatesInSensorRange(s, yCoordToCheck);
+            allXCoordinates.addAll(xcoords);
+        }
+        return allXCoordinates;
+    }
+
+    public static List<Long> xCoordinatesInSensorRange(Sensor s, long ycoordinate)
     {
         var xCoordinates = new ArrayList<Long>();
         long xDistance = s._beaconDistance - Math.abs(ycoordinate-s.getY());
@@ -71,6 +85,7 @@ public class Day15 {
             xCoordinates.add(s.getX()-deltaX);
             xCoordinates.add(s.getX()+deltaX);
         }
+
         return xCoordinates;
     }
 

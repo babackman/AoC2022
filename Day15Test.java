@@ -7,7 +7,7 @@ public class Day15Test {
     @Test
     public void xcoordsAtSameYAsBeacon() {
         Day15.Sensor s = new Day15.Sensor(2,2,2,4);
-        var xcoords = Day15.xCoordinatesWithNoBeacon(s, 4);
+        var xcoords = Day15.xCoordinatesInSensorRange(s, 4);
         assertEquals(1, xcoords.size());
         long xcoord=xcoords.get(0);
         assertEquals(2, xcoord);
@@ -16,7 +16,7 @@ public class Day15Test {
     public void xcoords_Example_Offset0(){
         // sensor and beacon from problem description, y-offset=1
         var s = new Day15.Sensor(8,7, 2,10);
-        var xcoords = Day15.xCoordinatesWithNoBeacon(s, 7);
+        var xcoords = Day15.xCoordinatesInSensorRange(s, 7);
 
         assertEquals(19,xcoords.size());
         assertTrue(xcoords.contains((long)-1));
@@ -43,7 +43,7 @@ public class Day15Test {
     public void xcoords_Example_Offset1(){
         // sensor and beacon from problem description, y-offset=1
         var s = new Day15.Sensor(8,7, 2,10);
-        var xcoords = Day15.xCoordinatesWithNoBeacon(s, 8);
+        var xcoords = Day15.xCoordinatesInSensorRange(s, 8);
 
         assertEquals(17,xcoords.size());
         assertTrue(xcoords.contains((long)0));
