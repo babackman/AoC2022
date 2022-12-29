@@ -1,7 +1,11 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.OptionalLong;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 import java.lang.String;
 
 public class Day15 {
@@ -51,6 +55,23 @@ public class Day15 {
     }
 
     public static void p2(List<Sensor> sensors, long maxCoordinate){
+        LongStream.range(0, maxCoordinate+1).parallel()
+            .filter(y ->{
+                var noBeacons = xCoordinatesInSensorRange(sensors,y);
+                OptionalLong foundX = LongStream.range(0,maxCoordinate+1)
+                    .filter(x -> !noBeacons.contains(x))
+                    .findFirst();
+                System.out.println("Finished y="+y);
+                if (foundX.isPresent())
+                {
+                    long tuningFrequency = Math.addExact(Math.multiplyExact(foundX.getAsLong(),4000000), y);
+                    System.out.println("Day 15, pt 2.  Tunung frequency: "+tuningFrequency);
+                    return true;
+                }
+                return false;
+            })
+            .findAny();
+/*            
         for(long y = 0; y <= maxCoordinate; y++){
             var noBeacons = xCoordinatesInSensorRange(sensors,y);
             for (long x = 0; x <= maxCoordinate; x++){
@@ -62,6 +83,7 @@ public class Day15 {
                 return;
             }
         }
+        */
     }
 
     public static Collection<Long> xCoordinatesInSensorRange(List<Sensor> sensors, long yCoordToCheck){
