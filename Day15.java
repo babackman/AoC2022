@@ -58,19 +58,19 @@ public class Day15 {
         LongStream.range(0, maxCoordinate+1).parallel()
             .filter(y ->{
                 var noBeacons = xCoordinatesInSensorRange(sensors,y);
-                OptionalLong foundX = LongStream.range(0,maxCoordinate+1)
-                    .filter(x -> !noBeacons.contains(x))
-                    .findFirst();
-                System.out.println("Finished y="+y);
-                if (foundX.isPresent())
-                {
-                    long tuningFrequency = Math.addExact(Math.multiplyExact(foundX.getAsLong(),4000000), y);
+                for (long x = 0; x <= maxCoordinate; x++){
+                    if (noBeacons.contains(x))
+                        continue;
+                    
+                    long tuningFrequency = Math.addExact(Math.multiplyExact(x,4000000), y);
                     System.out.println("Day 15, pt 2.  Tunung frequency: "+tuningFrequency);
                     return true;
-                }
+                }           
+                noBeacons = null;
+                System.out.println("Finished y="+y);
                 return false;
             })
-            .findAny();
+            .findFirst();
 /*            
         for(long y = 0; y <= maxCoordinate; y++){
             var noBeacons = xCoordinatesInSensorRange(sensors,y);
